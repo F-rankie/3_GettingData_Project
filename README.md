@@ -1,29 +1,26 @@
 ---
 title: "README.md for run_analysis.R"
 author: "Frank M. Berger"
-date: "Saturday, February 14, 2015"
+date: "Saturday, February 20, 2015"
 output: html_document
 ---
 
-### Introduction
-
 ### Directory (folder) structure
 
+Below the working directory, there is a data directory (./UCIdata).
+
 My code assumes that the directory structure of the downloaded data zip file is maintained, i.e. the
-test and train data are in separate directories (and stay there).
-
-Both test and train directories are subdirectories within the data directory.
-
+test and train data are in separate subdirectories (within the data directory), and stay there.
 
 ### Files in the main data directory
 
-In the main data directory, we find the following files:
+In the data directory, we find the following files:
 
 * **features.info.txt** - an explanation of the most relevant variables in the feature vector. The feature vector is a set of 561 numeric variables per observation. This corresponds to one line within the X_train and X_test data files (in .txt format).
 * **features.txt** - a complete list of all 561 features - 561 lines (= 561 features). This file is used in **run_analysis.R** to assign variable names to the columns of the R data.frame.
 * **activity_labels.txt** - this short file defines 6 different activities and how they are coded 1 to 6 (to be coded as "factor" with 6 levels in R) 
 
-### Files in the test and train directories
+### Files in the test and train subdirectories
 
 In each of the two subdirectories, we find the following files:
 
@@ -39,9 +36,9 @@ In a first step, the test data is read, in a sequence of separate steps, into a 
 The structure of the data frame is as follows:
 
 * 561 columns representing the data from the X files ('feature vector' of 561 numeric variables, as described in **features.txt** *(see above)*)
-* one additional column for the activity (1 to 6, taken from the Y file)
-* one additional column for the subject number (1 to 30, taken from the subject file)
-* one additional column to keep track whether the observation came from the test or the train data (actually not needed for the completion of the assignment)
+* one additional column ($Activity) for the activity (1 to 6, taken from the Y file)
+* one additional column ($SubjNo) for the subject number (1 to 30, taken from the subject file)
+* one additional column ($Origin) to keep track whether the observation came from the test or the train data (actually not needed for the completion of the assignment)
 
 So the data frame - when completely built - has 564 columns.
 
@@ -49,13 +46,35 @@ In a second step, the train data is read, following exactly the same workflow as
 
 ### Merging of the test and train data
 
-A simple bind_rows() command merges the two data frames, resulting in . Before doing so, the program checks that the column names of both data frames are identical.
+A simple bind_rows() command merges the two data frames, resulting in 10299 rows/observations. Before doing so, the program checks that the column names of both data frames are identical (internal consistency).
 
-### Why data frames and not data tables?
+I decided to do the merging of the two tables with all available variables, and to the column subsetting in a subsequent step.
+This allows to decide later on a different variable (sub-)set of interest more easily.
 
-Well, this code can probably be optimized for speed, but initial work with fread() to produce data tables resulted in RStudio crashes, whereas read.table() showed a stable behaviour.
+**Why data frames and not data tables?**
+
+Well, this code can probably be optimized for speed, but initial work with fread() to produce data tables (instead of data.frames) resulted in RStudio crashes, whereas read.table() showed a stable behaviour.
 
 The last part of the code, selecting a subset of variables and producing mean values, was done after conversion to the **tbl_df** class using the package **{dplyr}**.
+
+### Grouping and calculating the means by group
+
+A new table was generated containing only the means. This was achieved with the group_by() and the summarize_each() functions from {dplyr}.
+
+### Structure of the final tidy table, fb_tidy.txt
+
+The final tidy data file has 81 columns separated by " " (space). The first line contains the names of the variables (headers).
+In addition to the header row, there are 180 data rows. This corresponds to 30 subjects times 6 activities (per subject).
+
+These are the columns:
+
+Column #1 - Activity (in plain text format, no longer coded)
+
+Column #2 - SubjNo (integer)
+
+Columns #3 to #81: the groupwise means of the various Mean and Std variables from the original feature vector.
+In order to differentiate the calculated means from the original Mean and Std variables, an "m." prefix was added to the variable names.
+
 
 
 
